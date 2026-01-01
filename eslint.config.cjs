@@ -1,21 +1,34 @@
 const js = require("@eslint/js");
+const tsParser = require("@typescript-eslint/parser");
+const tsPlugin = require("@typescript-eslint/eslint-plugin");
 
 module.exports = [
-  js.configs.recommended,
   {
+    ignores: ["eslint.config.*", "node_modules/**", "dist/**", "**/*.d.ts"],
+  },
+
+  js.configs.recommended,
+
+  {
+    files: ["**/*.ts", "**/*.d.ts"],
     languageOptions: {
+      parser: tsParser,
       ecmaVersion: "latest",
+      sourceType: "module",
+    },
+    plugins: {
+      "@typescript-eslint": tsPlugin,
     },
     rules: {
       "arrow-spacing": ["warn", { before: true, after: true }],
-      "brace-style": ["error", "stroustrup", { allowSingleLine: true }],
-      "comma-dangle": ["error", "always-multiline"],
+      "brace-style": "off",
+      "comma-dangle": "off",
       "comma-spacing": "error",
       "comma-style": "error",
       curly: ["error", "multi-line", "consistent"],
       "dot-location": ["error", "property"],
       "handle-callback-err": "off",
-      indent: ["error", "tab"],
+      indent: ["error", 2],
       "keyword-spacing": "error",
       "max-nested-callbacks": ["error", { max: 4 }],
       "max-statements-per-line": ["error", { max: 2 }],
@@ -32,7 +45,7 @@ module.exports = [
       "no-undef": "off",
       "object-curly-spacing": ["error", "always"],
       "prefer-const": "error",
-      quotes: ["error", "single"],
+      quotes: "off",
       semi: ["error", "always"],
       "space-before-blocks": "error",
       "space-before-function-paren": [

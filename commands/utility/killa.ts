@@ -60,7 +60,7 @@ function formatTodayAverage(stats: KillaStats): string {
 }
 
 export function buildKillaMessage(user: User, stats: KillaStats) {
-  const remaining = Math.max(0, 100 - stats.totalKills);
+  // const remaining = Math.max(0, 100 - stats.totalKills);
   const KILLA_EMOJI = "<:killa:1192623748017299566>";
 
   const embed = new EmbedBuilder()
