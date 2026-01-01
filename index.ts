@@ -8,6 +8,8 @@ import {
 } from "discord.js";
 import fs from "fs";
 import path from "path";
+import { addKillaKill, resetTodayKillaStats } from "./db/stores/killaStore";
+import { buildKillaMessage } from "./commands/utility/killa";
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -47,6 +49,55 @@ for (const folder of commandFolders) {
 }
 
 client.on(Events.InteractionCreate, async (interaction) => {
+  if (interaction.isButton()) {
+    try {
+      if (interaction.customId.startsWith("killa:add:")) {
+        const [, , userId] = interaction.customId.split(":");
+
+        if (interaction.user.id !== userId) {
+          await interaction.reply({
+            content:
+              "You can only update your own Killa counter. Use /killa show to start your own.",
+            flags: MessageFlags.Ephemeral,
+          });
+          return;
+        }
+
+        const stats = addKillaKill(userId);
+        const message = buildKillaMessage(interaction.user, stats);
+        await interaction.update(message);
+        return;
+      }
+
+      if (interaction.customId.startsWith("killa:reset:")) {
+        const [, , userId] = interaction.customId.split(":");
+
+        if (interaction.user.id !== userId) {
+          await interaction.reply({
+            content:
+              "You can only reset your own Killa counter. Use /killa show to start your own.",
+            flags: MessageFlags.Ephemeral,
+          });
+          return;
+        }
+
+        const stats = resetTodayKillaStats(userId);
+        const message = buildKillaMessage(interaction.user, stats);
+        await interaction.update(message);
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({
+          content: "There was an error while handling this button.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+      return;
+    }
+  }
+
   if (!interaction.isChatInputCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
 
