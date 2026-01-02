@@ -4,7 +4,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # install deps (cached if lockfile unchanged)
-COPY bun.lockb package.json ./
+COPY bun.lock package.json ./
 RUN bun install --frozen-lockfile
 
 # copy source code
