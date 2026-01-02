@@ -5,6 +5,7 @@ import {
   GatewayIntentBits,
   MessageFlags,
   Collection,
+  ActivityType,
 } from "discord.js";
 import fs from "fs";
 import path from "path";
@@ -23,6 +24,9 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // When the client is ready, run this code
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}`);
+  client.user?.setActivity("v" + process.env.npm_package_version, {
+    type: ActivityType.Custom,
+  });
 });
 
 client.commands = new Collection();
