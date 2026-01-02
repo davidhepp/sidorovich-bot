@@ -8,7 +8,10 @@
   "scripts": {
     "dev": "bun --watch index.ts",
     "start": "bun index.ts",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "deploy:commands": "bun deploy-commands.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

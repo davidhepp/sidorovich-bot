@@ -59,9 +59,31 @@ function formatTodayAverage(stats: KillaStats): string {
   return "N/A";
 }
 
+function clamp(n: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, n));
+}
+
+function renderProgressBar(
+  current: number,
+  total: number,
+  size = 14,
+  filledChar = "█",
+  emptyChar = "░"
+): { bar: string; percent: number } {
+  const safeTotal = total > 0 ? total : 1;
+  const ratio = clamp(current / safeTotal, 0, 1);
+  const filled = Math.round(ratio * size);
+  const bar = filledChar.repeat(filled) + emptyChar.repeat(size - filled);
+  const percent = Math.round(ratio * 100);
+
+  return { bar, percent };
+}
+
 export function buildKillaMessage(user: User, stats: KillaStats) {
   // const remaining = Math.max(0, 100 - stats.totalKills);
   const KILLA_EMOJI = "<:killa:1192623748017299566>";
+  const goal = 100;
+  const { bar, percent } = renderProgressBar(stats.totalKills, goal);
 
   const embed = new EmbedBuilder()
     .setTitle(`${KILLA_EMOJI} Counter`)
@@ -69,13 +91,18 @@ export function buildKillaMessage(user: User, stats: KillaStats) {
     .addFields(
       {
         name: "Total kills",
-        value: `** ${stats.totalKills} / 100**`,
+        value: `** ${stats.totalKills} / ${goal}**`,
         inline: true,
       },
       {
         name: "Kills today",
         value: `**${stats.killsToday}**`,
         inline: true,
+      },
+      {
+        name: "Progress",
+        value: `${bar} **${percent}%**`,
+        inline: false,
       },
       {
         name: "Pace (Today)",

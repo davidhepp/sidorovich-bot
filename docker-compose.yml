@@ -1,0 +1,15 @@
+services:
+  deploy_commands:
+    image: ghcr.io/davidhepp/sidorovich-bot:latest
+    container_name: discord-bot-deploy-commands
+    env_file:
+      - .env
+    command: ["bun", "run", "deploy:commands"]
+    restart: "no"
+
+  bot:
+    image: ghcr.io/davidhepp/sidorovich-bot:latest
+    container_name: discord-bot
+    env_file:
+      - .env
+    restart: unless-stopped
