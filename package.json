@@ -11,8 +11,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json",
-    "deploy:commands": "bun deploy-commands.ts",
-    "postinstall": "drizzle-kit push"
+    "deploy:commands": "bun deploy-commands.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
