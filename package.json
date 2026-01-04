@@ -11,18 +11,24 @@
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json",
-    "deploy:commands": "bun deploy-commands.ts"
+    "deploy:commands": "bun deploy-commands.ts",
+    "postinstall": "drizzle-kit push"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@typescript-eslint/eslint-plugin": "^8.51.0",
     "@typescript-eslint/parser": "^8.51.0",
-    "eslint": "^9.39.2"
+    "drizzle-kit": "^0.31.8",
+    "eslint": "^9.39.2",
+    "tsx": "^4.21.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "discord.js": "^14.25.1"
+    "@neondatabase/serverless": "^1.0.2",
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.1"
   }
 }

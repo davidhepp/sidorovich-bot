@@ -1,5 +1,6 @@
-import { Database } from "bun:sqlite";
-import fs from "node:fs";
+import { asc, desc, eq } from "drizzle-orm";
+import { db } from "@db/db";
+import { killaKills, killaResets } from "@db/schema";
 
 export interface KillaStats {
   totalKills: number;
@@ -8,52 +9,35 @@ export interface KillaStats {
   killsToday: number;
 }
 
-const dbDirectory = "db/sqlite";
-
-// Ensure the SQLite directory exists relative to the project root
-fs.mkdirSync(dbDirectory, { recursive: true });
-
-const db = new Database(`${dbDirectory}/killa.sqlite`, { create: true });
-
-db.run(
-  `CREATE TABLE IF NOT EXISTS killa_kills (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    timestamp INTEGER NOT NULL
-  )`
-);
-
-db.run(
-  `CREATE TABLE IF NOT EXISTS killa_resets (
-    user_id TEXT PRIMARY KEY,
-    reset_after INTEGER NOT NULL
-  )`
-);
-
-function getStartOfToday(): number {
+function getStartOfToday(): Date {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return start.getTime();
+  return start;
 }
 
-function getEffectiveTodayStart(userId: string): number {
+async function getEffectiveTodayStart(userId: string): Promise<Date> {
   const startOfToday = getStartOfToday();
-  const row = db
-    .query("SELECT reset_after FROM killa_resets WHERE user_id = ?")
-    .get(userId) as { reset_after: number } | null;
 
-  if (row && row.reset_after > startOfToday) {
-    return row.reset_after;
+  const rows = await db
+    .select({ resetAfter: killaResets.resetAfter })
+    .from(killaResets)
+    .where(eq(killaResets.userId, userId))
+    .limit(1);
+
+  const row = rows[0];
+  if (row?.resetAfter != null && row.resetAfter > startOfToday) {
+    return row.resetAfter;
   }
 
   return startOfToday;
 }
 
-export function getKillaStats(userId: string): KillaStats {
-  const statement = db.query(
-    "SELECT timestamp FROM killa_kills WHERE user_id = ? ORDER BY timestamp ASC"
-  );
-  const rows = statement.all(userId) as { timestamp: number }[];
+export async function getKillaStats(userId: string): Promise<KillaStats> {
+  const rows = await db
+    .select({ timestamp: killaKills.timestamp })
+    .from(killaKills)
+    .where(eq(killaKills.userId, userId))
+    .orderBy(asc(killaKills.timestamp));
 
   const totalKills = rows.length;
 
@@ -62,11 +46,12 @@ export function getKillaStats(userId: string): KillaStats {
     const lastRow = rows[totalKills - 1];
     const prevRow = rows[totalKills - 2];
     if (lastRow && prevRow) {
-      lastIntervalMs = lastRow.timestamp - prevRow.timestamp;
+      lastIntervalMs =
+        lastRow.timestamp.getTime() - prevRow.timestamp.getTime();
     }
   }
 
-  const effectiveTodayStart = getEffectiveTodayStart(userId);
+  const effectiveTodayStart = await getEffectiveTodayStart(userId);
   const todayRows = rows.filter((row) => row.timestamp >= effectiveTodayStart);
   const killsToday = todayRows.length;
 
@@ -75,8 +60,8 @@ export function getKillaStats(userId: string): KillaStats {
     const firstRow = todayRows[0];
     const lastRow = todayRows[todayRows.length - 1];
     if (firstRow && lastRow) {
-      const first = firstRow.timestamp;
-      const last = lastRow.timestamp;
+      const first = firstRow.timestamp.getTime();
+      const last = lastRow.timestamp.getTime();
       todayAvgIntervalMs = (last - first) / (killsToday - 1);
     }
   }
@@ -89,35 +74,41 @@ export function getKillaStats(userId: string): KillaStats {
   };
 }
 
-export function removeKillaKill(userId: string): KillaStats {
-  const row = db
-    .query(
-      "SELECT id FROM killa_kills WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1"
-    )
-    .get(userId) as { id: number } | null;
-  if (row) {
-    db.query("DELETE FROM killa_kills WHERE id = ?").run(row.id);
+export async function removeKillaKill(userId: string): Promise<KillaStats> {
+  const rows = await db
+    .select({ id: killaKills.id })
+    .from(killaKills)
+    .where(eq(killaKills.userId, userId))
+    .orderBy(desc(killaKills.timestamp))
+    .limit(1);
+
+  const row = rows[0];
+  if (row?.id != null) {
+    await db.delete(killaKills).where(eq(killaKills.id, row.id));
   }
+
   return getKillaStats(userId);
 }
 
-export function addKillaKill(userId: string): KillaStats {
-  const now = Date.now();
-  db.query("INSERT INTO killa_kills (user_id, timestamp) VALUES (?, ?)").run(
-    userId,
-    now
-  );
+export async function addKillaKill(userId: string): Promise<KillaStats> {
+  const now = new Date();
+
+  await db.insert(killaKills).values({ userId, timestamp: now });
   return getKillaStats(userId);
 }
 
-export function resetTodayKillaStats(userId: string): KillaStats {
-  const now = Date.now();
+export async function resetTodayKillaStats(
+  userId: string
+): Promise<KillaStats> {
+  const now = new Date();
 
-  db.query(
-    `INSERT INTO killa_resets (user_id, reset_after)
-     VALUES (?, ?)
-     ON CONFLICT(user_id) DO UPDATE SET reset_after = excluded.reset_after`
-  ).run(userId, now);
+  await db
+    .insert(killaResets)
+    .values({ userId, resetAfter: now })
+    .onConflictDoUpdate({
+      target: killaResets.userId,
+      set: { resetAfter: now },
+    });
 
   return getKillaStats(userId);
 }

@@ -1,4 +1,3 @@
-// Require the necessary discord.js classes
 import {
   Client,
   Events,
@@ -13,8 +12,8 @@ import {
   addKillaKill,
   removeKillaKill,
   resetTodayKillaStats,
-} from "./db/stores/killaStore";
-import { buildKillaMessage } from "./commands/utility/killa";
+} from "@db/stores/killaStore";
+import { buildKillaMessage } from "@commands/utility/killa";
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -71,7 +70,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           return;
         }
 
-        const stats = addKillaKill(userId);
+        const stats = await addKillaKill(userId);
         const message = buildKillaMessage(interaction.user, stats);
         await interaction.update(message);
         return;
@@ -89,7 +88,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           return;
         }
 
-        const stats = removeKillaKill(userId);
+        const stats = await removeKillaKill(userId);
         const message = buildKillaMessage(interaction.user, stats);
         await interaction.update(message);
         return;
@@ -107,7 +106,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           return;
         }
 
-        const stats = resetTodayKillaStats(userId);
+        const stats = await resetTodayKillaStats(userId);
         const message = buildKillaMessage(interaction.user, stats);
         await interaction.update(message);
         return;
