@@ -129,6 +129,12 @@ export function buildKillaMessage(user: User, stats: KillaStats) {
       .setCustomId(`killa:reset:${user.id}`)
       .setLabel("Reset today")
       .setStyle(ButtonStyle.Danger)
+      .setDisabled(stats.killsToday === 0),
+    new ButtonBuilder()
+      .setCustomId(`killa:remove:${user.id}`)
+      .setLabel("-1")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(stats.totalKills === 0)
   );
 
   return { embeds: [embed], components: [row] };

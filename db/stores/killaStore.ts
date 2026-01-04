@@ -89,6 +89,18 @@ export function getKillaStats(userId: string): KillaStats {
   };
 }
 
+export function removeKillaKill(userId: string): KillaStats {
+  const row = db
+    .query(
+      "SELECT id FROM killa_kills WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1"
+    )
+    .get(userId) as { id: number } | null;
+  if (row) {
+    db.query("DELETE FROM killa_kills WHERE id = ?").run(row.id);
+  }
+  return getKillaStats(userId);
+}
+
 export function addKillaKill(userId: string): KillaStats {
   const now = Date.now();
   db.query("INSERT INTO killa_kills (user_id, timestamp) VALUES (?, ?)").run(

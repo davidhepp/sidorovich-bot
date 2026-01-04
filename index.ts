@@ -9,7 +9,11 @@ import {
 } from "discord.js";
 import fs from "fs";
 import path from "path";
-import { addKillaKill, resetTodayKillaStats } from "./db/stores/killaStore";
+import {
+  addKillaKill,
+  removeKillaKill,
+  resetTodayKillaStats,
+} from "./db/stores/killaStore";
 import { buildKillaMessage } from "./commands/utility/killa";
 
 const token = process.env.DISCORD_TOKEN;
@@ -68,6 +72,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
         }
 
         const stats = addKillaKill(userId);
+        const message = buildKillaMessage(interaction.user, stats);
+        await interaction.update(message);
+        return;
+      }
+
+      if (interaction.customId.startsWith("killa:remove:")) {
+        const [, , userId] = interaction.customId.split(":");
+
+        if (interaction.user.id !== userId) {
+          await interaction.reply({
+            content:
+              "You can only update your own Killa counter. Use /killa show to start your own.",
+            flags: MessageFlags.Ephemeral,
+          });
+          return;
+        }
+
+        const stats = removeKillaKill(userId);
         const message = buildKillaMessage(interaction.user, stats);
         await interaction.update(message);
         return;
