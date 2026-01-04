@@ -83,7 +83,9 @@ export function buildKillaMessage(user: User, stats: KillaStats) {
   // const remaining = Math.max(0, 100 - stats.totalKills);
   const KILLA_EMOJI = "<:killa:1192623748017299566>";
   const goal = 100;
-  const { bar, percent } = renderProgressBar(stats.totalKills, goal);
+  //   const { bar, percent } = renderProgressBar(stats.totalKills, goal);
+
+  const { bar } = renderProgressBar(stats.totalKills, goal);
 
   const embed = new EmbedBuilder()
     .setTitle(`${KILLA_EMOJI} Counter`)
@@ -101,14 +103,16 @@ export function buildKillaMessage(user: User, stats: KillaStats) {
       },
       {
         name: "Progress",
-        value: `${bar} **${percent}%**`,
+        // percent doesnt make sense sinc it's 100 total
+        // value: `${bar} **${percent}%**`,
+        value: `${bar}`,
         inline: false,
       },
       {
-        name: "Pace (Today)",
+        name: "Pace",
         value: `Last kill: **${formatLastKill(
           stats
-        )}**\nAverage: **${formatTodayAverage(stats)}**`,
+        )}**\nAverage (today): **${formatTodayAverage(stats)}**`,
         inline: false,
       }
     )
