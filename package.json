@@ -1,6 +1,6 @@
 {
   "name": "sidorovich-bot",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A utility-first discord bot.",
   "module": "index.ts",
   "type": "module",
