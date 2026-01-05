@@ -35,6 +35,20 @@ export function formatTodayAverage(stats: KillaStats): string {
   return "N/A";
 }
 
+export function formatAverageTimeToCompletion(
+  stats: KillaStats,
+  goal: number
+): string {
+  const remainingKills = Math.max(0, goal - stats.totalKills);
+  if (remainingKills === 0) return "Complete";
+
+  if (stats.todayAvgIntervalMs != null && stats.killsToday >= 2) {
+    return formatDuration(stats.todayAvgIntervalMs * remainingKills);
+  }
+
+  return "N/A";
+}
+
 export function renderProgressBar(
   current: number,
   total: number,

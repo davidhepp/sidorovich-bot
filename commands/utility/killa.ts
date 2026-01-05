@@ -10,6 +10,7 @@ import {
 import { getKillaStats, resetTodayKillaStats } from "@db/stores/killaStore";
 import {
   formatLastKill,
+  formatAverageTimeToCompletion,
   formatTodayAverage,
   renderProgressBar,
 } from "@lib/killa/format";
@@ -58,7 +59,11 @@ export function buildKillaMessage(user: User, stats: KillaStats) {
         name: "Pace",
         value: `Last kill: **${formatLastKill(
           stats
-        )}**\nAverage (today): **${formatTodayAverage(stats)}**`,
+        )}**\nAverage today: **${formatTodayAverage(stats)}**
+      Average time to completion: **${formatAverageTimeToCompletion(
+        stats,
+        goal
+      )}**`,
         inline: false,
       }
     )
